@@ -35,13 +35,17 @@ module Sidetiq
 
         redis.mset("#{key}:last", next_run, "#{key}:next", time_f)
 
-        case worker.instance_method(:perform).arity.abs
-        when 0
-          worker.perform_at(time)
-        when 1
-          worker.perform_at(time, next_run)
+        if Sidetiq.config.time_args
+          case worker.instance_method(:perform).arity.abs
+          when 0
+            worker.perform_at(time)
+          when 1
+            worker.perform_at(time, next_run)
+          else
+            worker.perform_at(time, next_run, time_f)
+          end
         else
-          worker.perform_at(time, next_run, time_f)
+          worker.perform_at(time)
         end
       end
     rescue StandardError => e
