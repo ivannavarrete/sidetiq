@@ -9,10 +9,12 @@ module Sidetiq
 
     # Public: Start time offset from epoch used for calculating run
     # times in the Sidetiq schedules.
-    START_TIME = Sidetiq.config.utc ? Time.utc(2010, 1, 1) : Time.local(2010, 1, 1)
+    def self.start_time
+      Sidetiq.config.utc ? Time.utc(2010, 1, 1) : Time.local(2010, 1, 1)
+    end
 
     def initialize # :nodoc:
-      @schedule = IceCube::Schedule.new(START_TIME)
+      @schedule = IceCube::Schedule.new(self.class.start_time)
     end
 
     def method_missing(meth, *args, &block) # :nodoc:
@@ -32,8 +34,8 @@ module Sidetiq
     # Returns true if a job is due, otherwise false.
     def schedule_next?(time)
       next_occurrence = @schedule.next_occurrence(time)
-      if @last_scheduled != next_occurrence
-        @last_scheduled = next_occurrence
+      if @last_scheduled != next_occurrence.to_i
+        @last_scheduled = next_occurrence.to_i
         return true
       end
       false

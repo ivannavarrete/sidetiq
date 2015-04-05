@@ -1,7 +1,39 @@
+0.6.3
+-----
+
+- Don't pass classes without #perform defined to handler
+- Don't try to connect to redis from Schduleable unless
+  Sidekiq.server? returns true.
+
+0.6.2
+-----
+
+- Lock ice cube to 0.11.1 to fix memory leaks [camjackson]
+- Don't use Redis keys command [Connorhd ]
+- Use Sidekiq.redis_pool in Schedulable [nkondratyev]
+
+0.6.1
+-----
+
+- Fix manual triggering of jobs with #perform arguments.
+- Require 'sidetiq' in 'sidetiq/web'.
+
+0.6.0
+-----
+
+- Explicitly require Sidekiq::ExceptionHandler [gglider]
+- Fix config.utc [gglider]
+- Add Ruby 2.1.1 to travix [gglider]
+- Bump ice_cube dependency to 0.12.0 [toolmantim]
+- Sort workers index page in web dashboard by name [oestrich]
+- Reseting cached times when recurrence changes [LongMan]
+- Move CSS to external files [futhr]
+
 0.5.0
 -----
 
 - Relax Sidekiq dependency. [leemhenson]
+
 0.4.3
 -----
 

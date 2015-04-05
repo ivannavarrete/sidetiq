@@ -33,17 +33,42 @@ module Sidetiq
         get_timestamp "next"
       end
 
+      def schedule_description
+        get_schedulable_key("schedule_description")
+      end
+
       def recurrence(options = {}, &block) # :nodoc:
         schedule.instance_eval(&block)
         schedule.set_options(options)
+
+        # deleting schedulable keys if schedule changed since last reccurence definition
+        if Sidekiq.server?
+          old_description = get_schedulable_key("schedule_description")
+          if old_description != schedule.to_s
+            get_schedulable_keys.map do |key|
+              Sidekiq.redis_pool.with { |r| r.del(key) }
+            end
+            set_schedulable_key("schedule_description", schedule.to_s)
+          end
+        end
       end
 
       private
 
+      def get_schedulable_keys
+        %w(next last schedule_description history).map { |key| "sidetiq:#{name}:#{key}" }
+      end
+
+      def get_schedulable_key(key)
+        Sidekiq.redis_pool.with { |r| r.get("sidetiq:#{name}:#{key}") }
+      end
+
+      def set_schedulable_key(key, value)
+        Sidekiq.redis_pool.with { |r| r.set("sidetiq:#{name}:#{key}", value) }
+      end
+
       def get_timestamp(key)
-        Sidekiq.redis do |redis|
-          (redis.get("sidetiq:#{name}:#{key}") || -1).to_f
-        end
+        (get_schedulable_key(key) || -1).to_f
       end
     end
 
@@ -56,4 +81,3 @@ module Sidetiq
     end
   end
 end
-
